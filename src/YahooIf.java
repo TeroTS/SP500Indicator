@@ -1,3 +1,6 @@
+/*
+ * open connection to Yahoo finance and download the stock data
+ */
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -7,7 +10,7 @@ import java.net.URLConnection;
 public class YahooIf {
 	
 	/*
-	 * open connection to Yahoo stock download site, returns read buffer
+	 * open connection to Yahoo, returns read buffer
 	 */
 	public BufferedReader openYahooConnection() {
 		  BufferedReader reader = null;
