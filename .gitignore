@@ -1,3 +1,5 @@
+sp500.db
+
 #################
 ## Eclipse
 #################
@@ -15,7 +17,6 @@ local.properties
 .classpath
 .settings/
 .loadpath
-*.db
 
 # External tool builders
 .externalToolBuilders/
