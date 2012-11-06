@@ -118,9 +118,7 @@ public class DBIf {
 							 "volume integer, adjclose real)";
 		
     	try {		
-    		//connection = DriverManager.getConnection("jdbc:sqlite:" + nameDb);
     		statement = conn.createStatement();
-    		//create table: date, ticker, open, high, low, close and adjusted close
     		statement.executeUpdate("drop table if exists stock");
     		statement.executeUpdate(tableString);
 	    } catch(SQLException e) {
