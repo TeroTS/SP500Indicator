@@ -1,6 +1,7 @@
 /*
  * open connection to Yahoo finance and download the stock data
  */
+
 import java.io.*;
 import java.io.InputStreamReader;
 import java.net.URL;

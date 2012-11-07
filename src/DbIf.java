@@ -1,5 +1,6 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,7 +12,8 @@ import java.util.HashMap;
 
 public class DBIf {
 	
-	static final String NAME_DB = "sp500.db"; 
+	static final String NAME_DB = "jdbc:sqlite:sp500.db"; 
+	static final String TICKER_FILE = "SP500.txt";
 	
 	//private YahooIf YahooIf;
 	
@@ -23,7 +25,7 @@ public class DBIf {
 	    try
 	    {
 	    	// create a database connection
-	        conn = DriverManager.getConnection("jdbc:sqlite:" + name);
+	        conn = DriverManager.getConnection(name);
 	        //Statement statement = connection.createStatement();
 	    } catch(SQLException e) {
 		      System.err.println(e.getMessage());
@@ -51,8 +53,8 @@ public class DBIf {
     public void writeDB(Connection conn, BufferedReader reader, String name) { //throws SQLException {
     	//Connection conn = null;
     	Statement statement = null;
-	    // create a database connection
-	    //Connection conn = openDBConnection(DBname);
+    	//prepared statement to speed up the write
+    	PreparedStatement preparedStatement = null;
 	    try
 	    {
 	        statement = conn.createStatement();
@@ -64,9 +66,29 @@ public class DBIf {
         		if (i != 1) {
         			//split data fields
         			String[] dataFields = line.split(",");
-        			statement.executeUpdate("insert into stock values(" + "'" + dataFields[0] + "'" + "," +
-        					"'" + name + "'" + "," + dataFields[1] + "," + dataFields[2] + "," + dataFields[3] + "," + dataFields[4] + "," + 
-        					dataFields[5] + "," + dataFields[6] + ")");    
+        			preparedStatement = conn.prepareStatement("insert into stock values(?,?,?,?,?,?,?,?)");
+        			//date
+        			preparedStatement.setString(1, dataFields[0]);
+        			//ticker
+        			preparedStatement.setString(2, name);
+        			//open
+        			preparedStatement.setString(3, dataFields[1]);
+        			//high
+        			preparedStatement.setString(4, dataFields[2]);
+        			//low
+        			preparedStatement.setString(5, dataFields[3]);
+        			//close
+        			preparedStatement.setString(6, dataFields[4]);
+        			//volume
+        			preparedStatement.setString(7, dataFields[5]);
+        			//adjusted close
+        			preparedStatement.setString(8, dataFields[6]);
+        			//execute
+        			preparedStatement.executeUpdate();
+
+        			//statement.executeUpdate("insert into stock values(" + "'" + dataFields[0] + "'" + "," +
+        			//		"'" + name + "'" + "," + dataFields[1] + "," + dataFields[2] + "," + dataFields[3] + "," + dataFields[4] + "," + 
+        			//		dataFields[5] + "," + dataFields[6] + ")");    
         		}
         	} 
 	    } catch(Exception ex) {
@@ -107,6 +129,37 @@ public class DBIf {
 	    }
     }
     
+	/*
+	 * update database with new data
+	 */
+	public void updateDB(HashMap<String, String> stockProp, Connection conn) {
+	    try {
+	    	//read stock tickers from file,
+	    	//one ticker per line
+	    	File file = new File(TICKER_FILE);
+	    	FileReader fileReader = new FileReader(file);
+	    	BufferedReader buffReader = new BufferedReader(fileReader);
+	        
+	    	String line = null;
+	    	while ((line = buffReader.readLine()) != null) {
+	    		//set ticker
+	    		stockProp.put("ticker", line);
+	    		//create new Yahoo connection for every stock
+	    		YahooIf yahooIf = new YahooIf(stockProp);
+	    		//connect Yahoo and read data
+	    		BufferedReader bufferedReader = yahooIf.openYahooConnection();
+		        //write database
+		        this.writeDB(conn, bufferedReader, stockProp.get("ticker"));
+		        //close Yahoo read stream
+		        yahooIf.closeYahooConnection(bufferedReader);
+	    		
+	    	}
+	    	buffReader.close();
+	    } catch(IOException e) {
+	    	e.printStackTrace();
+	    }		
+	}
+    
     /*
      * create table
      */
@@ -132,6 +185,7 @@ public class DBIf {
 	    }
 	}
 	
+
 	
 
 	public static void main(String[] args) throws ClassNotFoundException {
@@ -143,7 +197,7 @@ public class DBIf {
 	    
 	    //test stock properties
 	    HashMap<String, String> stockProp = new HashMap<String, String>();
-	    stockProp.put("ticker", "intc");
+	    //stockProp.put("ticker", "intc");
 	    stockProp.put("fromMonth", "0");
 	    stockProp.put("fromDay", "1");
 	    stockProp.put("fromYear", "2012");
@@ -154,56 +208,14 @@ public class DBIf {
 	    
 	    
 	    DBIf dBIf = new DBIf();
-	    //YahooIf yahooIf = new YahooIf(stockProp);
-	    
-	    //BufferedReader bufferedReader = null;
-	    
     	// create a database connection
-        Connection connection = dBIf.openDBConnection("sp500.db");
+        Connection connection = dBIf.openDBConnection(NAME_DB);
         //create table
         dBIf.createTable(connection);
-        
-	    try {
-	    	//read stock tickers from file,
-	    	//one ticker per line
-	    	File file = new File("SP500.txt");
-	    	FileReader fileReader = new FileReader(file);
-	    	BufferedReader buffReader = new BufferedReader(fileReader);
-	        
-	    	String line = null;
-	    	while ((line = buffReader.readLine()) != null) {
-	    		//set ticker
-	    		stockProp.put("ticker", line);
-	    		//create new Yahoo connection for every stock
-	    		YahooIf yahooIf = new YahooIf(stockProp);
-	    		//connect Yahoo and read data
-	    		BufferedReader bufferedReader = yahooIf.openYahooConnection();
-		        //write database
-		        dBIf.writeDB(connection, bufferedReader, stockProp.get("ticker"));
-		        //close connection
-		        yahooIf.closeYahooConnection(bufferedReader);
-	    		
-	    	}
-	    	buffReader.close();
-	    } catch(IOException e) {
-	    	e.printStackTrace();
-	    }
-	    	
-	        //create table
-	        //dBIf.createTable(connection);
-	        //connect Yahoo
-	        //bufferedReader = yahooIf.openYahooConnection();
-	        //write database
-	        //dBIf.writeDB(connection, bufferedReader);
-	        
-	        
-	        //read database
-	        dBIf.readDB(connection);
-/*	    } catch(SQLException e) {
-	    	System.err.println(e.getMessage());
-		} finally {	       
-			dBIf.closeDBConnection(connection);
-		} */
+        //update database
+        dBIf.updateDB(stockProp, connection);
+	    //read database
+	    dBIf.readDB(connection);
 	    
     }
 }
