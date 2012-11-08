@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.io.*;
+import java.util.Calendar;
 import java.util.HashMap;
 //import java.net.URL; 
 //import java.net.URLConnection; 
@@ -13,7 +14,7 @@ import java.util.HashMap;
 public class DBIf {
 	
 	static final String NAME_DB = "jdbc:sqlite:sp500.db"; 
-	static final String TICKER_FILE = "SP500.txt";
+	//static final String TICKER_FILE = "SP500.txt";
 	
 	//private YahooIf YahooIf;
 	
@@ -63,6 +64,7 @@ public class DBIf {
         	int i = 0;
         	while ((line = reader.readLine()) != null) {
         		i++;
+        		//dont read the first line
         		if (i != 1) {
         			//split data fields
         			String[] dataFields = line.split(",");
@@ -129,36 +131,7 @@ public class DBIf {
 	    }
     }
     
-	/*
-	 * update database with new data
-	 */
-	public void updateDB(HashMap<String, String> stockProp, Connection conn) {
-	    try {
-	    	//read stock tickers from file,
-	    	//one ticker per line
-	    	File file = new File(TICKER_FILE);
-	    	FileReader fileReader = new FileReader(file);
-	    	BufferedReader buffReader = new BufferedReader(fileReader);
-	        
-	    	String line = null;
-	    	while ((line = buffReader.readLine()) != null) {
-	    		//set ticker
-	    		stockProp.put("ticker", line);
-	    		//create new Yahoo connection for every stock
-	    		YahooIf yahooIf = new YahooIf(stockProp);
-	    		//connect Yahoo and read data
-	    		BufferedReader bufferedReader = yahooIf.openYahooConnection();
-		        //write database
-		        this.writeDB(conn, bufferedReader, stockProp.get("ticker"));
-		        //close Yahoo read stream
-		        yahooIf.closeYahooConnection(bufferedReader);
-	    		
-	    	}
-	    	buffReader.close();
-	    } catch(IOException e) {
-	    	e.printStackTrace();
-	    }		
-	}
+
     
     /*
      * create table
@@ -185,14 +158,12 @@ public class DBIf {
 	    }
 	}
 	
-
 	
-
 	public static void main(String[] args) throws ClassNotFoundException {
 		
 	    // load the sqlite-JDBC driver
 	    Class.forName("org.sqlite.JDBC");
-	    
+	   
 	    //load S&P500 stocks (from file) using properties !!!!
 	    
 	    //test stock properties
@@ -213,7 +184,7 @@ public class DBIf {
         //create table
         dBIf.createTable(connection);
         //update database
-        dBIf.updateDB(stockProp, connection);
+        .updateDB(stockProp, connection);
 	    //read database
 	    dBIf.readDB(connection);
 	    
