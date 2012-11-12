@@ -1,5 +1,5 @@
 /*
- * database table
+ /* database table
  */
 import java.util.HashMap;
 

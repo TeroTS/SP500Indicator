@@ -14,24 +14,36 @@ public class YahooIf {
 	//Yahoo finance data download URL
 	static final String YAHOO_URL = "http://ichart.finance.yahoo.com/table.csv?";
 	
-	//stock download properties (ticker, start and end year/month/day, day/month/year data) 
+	//stock download date properties (from date and to date)
 	private HashMap<String, String> stockProp;
 	
 	//constructor
-	public YahooIf(HashMap<String, String> hashMap) {
-		//overwrite all the values in stockProp
-		stockProp = hashMap; //.putAll(hashMap);
+	public YahooIf() {
+		stockProp = new HashMap<String, String>();
+	}
+	
+	/*
+	 * set the date properties
+	 */
+	public void setDateProp(String prevDate, String currentDate) {
+		stockProp.put("fromMonth", prevDate.split("-")[1]);
+	    stockProp.put("fromDay", prevDate.split("-")[2]);
+	    stockProp.put("fromYear", prevDate.split("-")[0]);
+	    stockProp.put("toMonth", currentDate.split("-")[1]);
+	    stockProp.put("toDay", currentDate.split("-")[2]);
+	    stockProp.put("toYear", currentDate.split("-")[0]);
+	    stockProp.put("freq", "d");		
 	}
 	
 	/*
 	 * open connection to Yahoo, returns read buffer
 	 */
-	public BufferedReader openYahooConnection() {
+	public BufferedReader openYahooConnection(String ticker) {
 		  BufferedReader reader = null;
 		  
 	      try {
 	    	  URL yahoo = new URL(YAHOO_URL + 
-	    			  			  "s=" + stockProp.get("ticker") + 
+	    			  			  "s=" + stockProp.get(ticker) + 
 	    			  			  "&d=" + stockProp.get("toMonth") + 
 	    			  	          "&e=" + stockProp.get("toDay") + 
 	    			  		      "&f=" + stockProp.get("toYear") + 	    			  			  

@@ -5,15 +5,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.io.*;
-import java.util.Calendar;
-import java.util.HashMap;
-//import java.net.URL; 
-//import java.net.URLConnection; 
-
 
 public class DBIf {
-	
-	static final String NAME_DB = "jdbc:sqlite:sp500.db"; 
+
 	//static final String TICKER_FILE = "SP500.txt";
 	
 	//private YahooIf YahooIf;
@@ -68,23 +62,23 @@ public class DBIf {
         		if (i != 1) {
         			//split data fields
         			String[] dataFields = line.split(",");
-        			preparedStatement = conn.prepareStatement("insert into stock values(?,?,?,?,?,?,?,?)");
+        			preparedStatement = conn.prepareStatement("insert or replace into stock values(?,?,?,?,?,?,?,?)");
         			//date
         			preparedStatement.setString(1, dataFields[0]);
         			//ticker
         			preparedStatement.setString(2, name);
         			//open
-        			preparedStatement.setString(3, dataFields[1]);
+        			preparedStatement.setDouble(3, Double.parseDouble(dataFields[1]));
         			//high
-        			preparedStatement.setString(4, dataFields[2]);
+        			preparedStatement.setDouble(4, Double.parseDouble(dataFields[2]));
         			//low
-        			preparedStatement.setString(5, dataFields[3]);
+        			preparedStatement.setDouble(5, Double.parseDouble(dataFields[3]));
         			//close
-        			preparedStatement.setString(6, dataFields[4]);
+        			preparedStatement.setDouble(6, Double.parseDouble(dataFields[4]));
         			//volume
-        			preparedStatement.setString(7, dataFields[5]);
+        			preparedStatement.setInt(7, Integer.parseInt(dataFields[5]));
         			//adjusted close
-        			preparedStatement.setString(8, dataFields[6]);
+        			preparedStatement.setDouble(8, Double.parseDouble(dataFields[6]));
         			//execute
         			preparedStatement.executeUpdate();
 
@@ -108,13 +102,14 @@ public class DBIf {
     /*
      * read database, one row at a time
      */
-    public void readDB(Connection conn) { //throws SQLException {
+    public void readDB(Connection conn, String ticker) { //throws SQLException {
     	Statement statement = null;
     	try {
     		statement = conn.createStatement();
-    		ResultSet rs = statement.executeQuery("select * from stock order by date");
+    		ResultSet rs = statement.executeQuery("select * from stock where ticker = '" + ticker + "' order by date");
     		while(rs.next()) {
     			// read the result set
+    			//System.out.println(rs.getDouble("adjclose") + " ");  
     			System.out.print(rs.getString("date") + " ");  
     			System.out.print(rs.getString("ticker") + " ");
     			System.out.print(rs.getDouble("adjclose") + "\n");
@@ -131,8 +126,6 @@ public class DBIf {
 	    }
     }
     
-
-    
     /*
      * create table
      */
@@ -147,6 +140,8 @@ public class DBIf {
     		statement = conn.createStatement();
     		statement.executeUpdate("drop table if exists stock");
     		statement.executeUpdate(tableString);
+    		//create unique index
+    		statement.executeUpdate("CREATE UNIQUE INDEX stock_idx ON stock(date, ticker)");
 	    } catch(SQLException e) {
 	    	System.err.println(e.getMessage());
 	    } finally {
@@ -158,36 +153,5 @@ public class DBIf {
 	    }
 	}
 	
-	
-	public static void main(String[] args) throws ClassNotFoundException {
-		
-	    // load the sqlite-JDBC driver
-	    Class.forName("org.sqlite.JDBC");
-	   
-	    //load S&P500 stocks (from file) using properties !!!!
-	    
-	    //test stock properties
-	    HashMap<String, String> stockProp = new HashMap<String, String>();
-	    //stockProp.put("ticker", "intc");
-	    stockProp.put("fromMonth", "0");
-	    stockProp.put("fromDay", "1");
-	    stockProp.put("fromYear", "2012");
-	    stockProp.put("toMonth", "8");
-	    stockProp.put("toDay", "1");
-	    stockProp.put("toYear", "2012");
-	    stockProp.put("freq", "d");
-	    
-	    
-	    DBIf dBIf = new DBIf();
-    	// create a database connection
-        Connection connection = dBIf.openDBConnection(NAME_DB);
-        //create table
-        dBIf.createTable(connection);
-        //update database
-        .updateDB(stockProp, connection);
-	    //read database
-	    dBIf.readDB(connection);
-	    
-    }
 }
 	
