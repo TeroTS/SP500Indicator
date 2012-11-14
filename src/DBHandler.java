@@ -4,13 +4,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.io.*;
+import java.util.ArrayList;
 
-public class DBIf {
-
-	//static final String TICKER_FILE = "SP500.txt";
-	
-	//private YahooIf YahooIf;
+public class DBHandler {
 	
 	/*
 	 * open connection to database
@@ -45,7 +41,7 @@ public class DBIf {
 	/*
 	 * load stock data and write it to database
 	 */
-    public void writeDB(Connection conn, BufferedReader reader, String name) { //throws SQLException {
+    public void writeDB(Connection conn, ArrayList<StockIf> stockList, String tableName) { //throws SQLException {
     	//Connection conn = null;
     	Statement statement = null;
     	//prepared statement to speed up the write
@@ -54,11 +50,20 @@ public class DBIf {
 	    {
 	        statement = conn.createStatement();
 	        //read buffer from download site
-	        String line = null;
-        	int i = 0;
-        	while ((line = reader.readLine()) != null) {
+	        //String line = null;
+        	//int i = 0;
+        	for (StockIf index : stockList) {
+        		preparedStatement = conn.prepareStatement("insert or replace into " + tableName + " values(?,?,?)");
+    			//date
+    			preparedStatement.setString(1, index.getDate());
+    			//ticker
+    			preparedStatement.setString(2, index.getTicker());
+    			//value
+    			preparedStatement.setDouble(3, index.getValue());   			
+        	}	
+        	/*while ((line = reader.readLine()) != null) {
         		i++;
-        		//dont read the first line
+        		//don't read the first line
         		if (i != 1) {
         			//split data fields
         			String[] dataFields = line.split(",");
@@ -66,7 +71,7 @@ public class DBIf {
         			//date
         			preparedStatement.setString(1, dataFields[0]);
         			//ticker
-        			preparedStatement.setString(2, name);
+        			preparedStatement.setString(2, ticker);
         			//open
         			preparedStatement.setDouble(3, Double.parseDouble(dataFields[1]));
         			//high
@@ -86,7 +91,7 @@ public class DBIf {
         			//		"'" + name + "'" + "," + dataFields[1] + "," + dataFields[2] + "," + dataFields[3] + "," + dataFields[4] + "," + 
         			//		dataFields[5] + "," + dataFields[6] + ")");    
         		}
-        	} 
+        	} */
 	    } catch(Exception ex) {
 	    	  ex.printStackTrace();
  
@@ -102,17 +107,27 @@ public class DBIf {
     /*
      * read database, one row at a time
      */
-    public void readDB(Connection conn, String ticker) { //throws SQLException {
+    public ArrayList<StockIf> readDB(Connection conn, String command, StockIf stockItem) { //throws SQLException {
+    	ResultSet rs = null;
     	Statement statement = null;
+    	ArrayList<StockIf> stockList = new ArrayList<StockIf>();
+    	//StockItem stockItem;
+    	
     	try {
     		statement = conn.createStatement();
-    		ResultSet rs = statement.executeQuery("select * from stock where ticker = '" + ticker + "' order by date");
+    		rs = statement.executeQuery(command);//"select * from stock where ticker = '" + ticker + "' order by date");
     		while(rs.next()) {
+    			stockItem.setDate(rs.getString("date"));
+    			stockItem.setTicker(rs.getString("ticker"));
+    			stockItem.setValue(rs.getDouble("value"));   			
+    			stockList.add(stockItem);
+    			//adjClose = rs.getDouble("adjclose");
+    			//return adjClose;
     			// read the result set
     			//System.out.println(rs.getDouble("adjclose") + " ");  
     			System.out.print(rs.getString("date") + " ");  
     			System.out.print(rs.getString("ticker") + " ");
-    			System.out.print(rs.getDouble("adjclose") + "\n");
+    			System.out.print(rs.getDouble("value") + "\n");
     		}
     	}  catch(SQLException e) {
 	    	//connection close failed.
@@ -124,24 +139,25 @@ public class DBIf {
 	    		System.err.println(e.getMessage());
 	    	}
 	    }
+    	return stockList;
     }
     
     /*
      * create table
      */
-	public void createTable(Connection conn) { //throws SQLException {
+	public void createTable(Connection conn, String tableString, String tableName) { //throws SQLException {
 		//if (!(new File(DBname).exists())) {	
 		Statement statement = null;
-		String tableString = "create table stock (date text, ticker string, " +
+		/*String tableString = "create table stock (date text not null, ticker string not null, " +
 							 "open real, high real, low real, close real, " +
-							 "volume integer, adjclose real)";
+							 "volume integer, value real, primary key (date, ticker))";*/
 		
     	try {		
     		statement = conn.createStatement();
-    		statement.executeUpdate("drop table if exists stock");
+    		statement.executeUpdate("drop table if exists " + tableName);
     		statement.executeUpdate(tableString);
     		//create unique index
-    		statement.executeUpdate("CREATE UNIQUE INDEX stock_idx ON stock(date, ticker)");
+    		//statement.executeUpdate("CREATE UNIQUE INDEX stock_idx ON stock(date, ticker)");
 	    } catch(SQLException e) {
 	    	System.err.println(e.getMessage());
 	    } finally {

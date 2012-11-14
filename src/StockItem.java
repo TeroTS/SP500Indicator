@@ -1,17 +1,9 @@
 /*
- /* database table
+ /* stock class
  */
-import java.util.HashMap;
 
-public class Table {
+public class StockItem implements StockIf {
 	
-	//name of the table
-	private String name;
-	//hashmap: name & type
-	HashMap<String, String> tableRow;
-	//header of the row
-	//private String header = "date text, ticker string, open real, high real, low real, close real, volume integer, adjclose real";
-	//numeric values of the row
 	//date 
 	private String date;
 	//name of the stock symbol
@@ -26,37 +18,24 @@ public class Table {
 	private double close;
 	//volume of the day
 	private int volume;
-	//adjusted close of the day (dividend adjusted)
+	//adjusted close of the day (dividend and split adjusted)
 	private double adjClose;
-	
-	/**
-	 * @return the name
+
+	//implement the interface
+	/*
+	 * get value (=adjusted close)
 	 */
-	public String getName() {
-		return name;
+	public double getValue() {
+		return (this.getAdjClose());
 	}
 	
-	/**
-	 * @param name the name to set
+	/*
+	 * set value to adjusted close
 	 */
-	public void setName(String name) {
-		this.name = name;
+	public void setValue(double value) {
+		this.setAdjClose(value);
 	}
 	
-	/**
-	 * @return the tableRow
-	 */
-	//public HashMap getTableRow() {
-	//	return tableRow;
-	//}
-
-	/**
-	 * @param tableRow the tableRow to set
-	 */
-	//public void setTableRow(HashMap tableRow) {
-	//	this.tableRow = tableRow;
-	//}
-
 	/**
 	 * @return the date
 	 */
@@ -84,6 +63,7 @@ public class Table {
 	public void setTicker(String ticker) {
 		this.ticker = ticker;
 	}
+	//interface implementation ends
 
 	/**
 	 * @return the open
@@ -174,7 +154,7 @@ public class Table {
 	 */
 	@Override
 	public String toString() {
-		return "Table [name=" + name + ", date=" + date + ", ticker=" + ticker
+		return "Table [date=" + date + ", ticker=" + ticker
 				+ ", open=" + open + ", high=" + high + ", low=" + low
 				+ ", close=" + close + ", volume=" + volume + ", adjClose="
 				+ adjClose + "]";
