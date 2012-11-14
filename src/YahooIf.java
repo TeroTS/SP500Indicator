@@ -3,10 +3,11 @@
  */
 
 import java.io.*;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
+//import java.util.List;
+import java.util.ArrayList;
 //import java.util.Properties;
 
 public class YahooIf {
@@ -36,14 +37,16 @@ public class YahooIf {
 	}
 	
 	/*
-	 * open connection to Yahoo, returns read buffer
+	 * open connection to Yahoo, returns arraylist
 	 */
-	public BufferedReader openYahooConnection(String ticker) {
+	public ArrayList<StockIf> openConnection(String ticker) {
 		  BufferedReader reader = null;
+		  ArrayList<StockIf> list = new ArrayList<StockIf>();
+		  StockItem stock = new StockItem();
 		  
 	      try {
 	    	  URL yahoo = new URL(YAHOO_URL + 
-	    			  			  "s=" + stockProp.get(ticker) + 
+	    			  			  "s=" + ticker + 
 	    			  			  "&d=" + stockProp.get("toMonth") + 
 	    			  	          "&e=" + stockProp.get("toDay") + 
 	    			  		      "&f=" + stockProp.get("toYear") + 	    			  			  
@@ -53,17 +56,41 @@ public class YahooIf {
 	    			  			  "&c=" + stockProp.get("fromYear")); 
 	    	  
 	          URLConnection yahooConn = yahoo.openConnection();             
-	          reader = new BufferedReader(new InputStreamReader(yahooConn.getInputStream())); 
+	          reader = new BufferedReader(new InputStreamReader(yahooConn.getInputStream()));
+	          //write data into arraylist
+		      String line = null;
+	          int i = 0;
+	          while ((line = reader.readLine()) != null) {
+	        	  i++;
+	        	  //don't read the first line
+	        	  if (i != 1) {
+	        		  //split data fields
+	        		  String[] dataFields = line.split(",");
+	        		  //set the stock attributes
+	        		  stock.setDate(dataFields[0]);
+	        		  stock.setTicker(ticker);
+	        		 /* stock.setOpen(Double.parseDouble(dataFields[1]));
+	        		  stock.setHigh(Double.parseDouble(dataFields[2]));
+	        		  stock.setLow(Double.parseDouble(dataFields[3]));
+	        		  stock.setClose(Double.parseDouble(dataFields[4]));
+	        		  stock.setVolume(Integer.parseInt(dataFields[5]));*/
+	        		 // stock.setAdjClose(Double.parseDouble(dataFields[6]));
+	        		  stock.setValue(Double.parseDouble(dataFields[6]));
+	        		  //add stock to arraylist
+	        		  list.add(stock);
+	        		  //System.out.println(stock.getTicker() + " " + stock.getDate());
+	        	  }
+	          }
 	      } catch(Exception e) {
 	    	  e.printStackTrace();
 	      }
-	      return reader;
+	      return list;
 	}
 	
 	/*
-	 * close yahoo data reader
+	 * close data reader
 	 */
-	public void closeYahooConnection(BufferedReader reader) {
+	public void closeConnection(BufferedReader reader) {
 		try {
 			if (reader != null)
 				reader.close();
