@@ -60,7 +60,7 @@ public class Utility {
     	String Year;
     	Calendar now = Calendar.getInstance();
         //get current date - 1 day
-    	now.add(Calendar.DAY_OF_WEEK, -1);
+    	now.add(Calendar.DAY_OF_WEEK, -2); // fix this (-1) !!!!!!!!!!!!!
     	//setDay(Integer.toString(now.get(Calendar.DATE)));
         Day = Integer.toString(now.get(Calendar.DATE));        
         Month = Integer.toString(now.get(Calendar.MONTH));         
