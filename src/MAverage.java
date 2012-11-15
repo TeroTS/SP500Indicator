@@ -2,10 +2,7 @@
  /* n-length moving average
  */
 
-//import java.util.List;
-//import java.util.ArrayList;
 import java.util.ArrayDeque;
-//import java.sql.ResultSet;
 
 public class MAverage {
 	
@@ -23,37 +20,11 @@ public class MAverage {
 	public MAverage(int length) {
 		this.length = length;
 	}
-
-	/*
-	 * calculate moving average, list parameter
-	 */	
-	/*public void calculateMa(ArrayList<Stock> list) {	
-		for (Stock index : list) {
-			calculateSum(index.getAdjClose());
-			//calculate the moving average when all data available
-			if (count == length) {
-				getAverage();
-			}
-		}	
-	}
-	
-	/*
-	 * calculate moving average, resultset parameter
-	 */	
-	/*public void calculateMa(ResultSet rs) {	
-		while (rs.next()) {
-			calculateSum(index.getAdjClose());
-			//calculate the moving average when all data available
-			if (count == length) {
-				getAverage();
-			}
-		}	
-	}*/
 	
 	/*
 	 * calculate total sum and count
 	 */
-	public void calculateMa(double inp) {
+	public void calcSum(double inp) {
 		//calculate total sum
 		sum += inp;
 		//add input value into FIFO

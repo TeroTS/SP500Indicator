@@ -9,6 +9,12 @@ import java.util.HashMap;
 //import java.util.List;
 import java.util.ArrayList;
 //import java.util.Properties;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.text.ParseException;
+ 
 
 public class YahooIf {
 	
@@ -24,12 +30,33 @@ public class YahooIf {
 	}
 	
 	/*
-	 * set the date properties
+	 * set download dates 
 	 */
 	public void setDateProp(String prevDate, String currentDate) {
-		stockProp.put("fromMonth", prevDate.split("-")[1]);
-	    stockProp.put("fromDay", prevDate.split("-")[2]);
-	    stockProp.put("fromYear", prevDate.split("-")[0]);
+		//download start day is always previous day + 1
+		Calendar cal = new GregorianCalendar();
+		try {
+			//String pDate = prevDate;
+			Date date = new SimpleDateFormat("yyyy-MM-dd").parse(prevDate);
+			//System.out.println(date);
+			cal.setTime(date);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		//add one day
+		cal.add(Calendar.DAY_OF_WEEK, 1);
+        String Day = Integer.toString(cal.get(Calendar.DATE));        
+        String Month = Integer.toString(cal.get(Calendar.MONTH)+1); //first month 0         
+        String Year = Integer.toString(cal.get(Calendar.YEAR)); 
+    	//format YYYY-MM-DD
+    	String pDate = Year + "-" + Month + "-" + Day;
+    	
+    	//System.out.println(pDate);
+		//int fromDay = Integer.parseInt(prevDate.split("-")[2]) + 1;
+		//set download dates
+		stockProp.put("fromMonth", pDate.split("-")[1]);
+	    stockProp.put("fromDay", pDate.split("-")[2]);
+	    stockProp.put("fromYear", pDate.split("-")[0]);
 	    stockProp.put("toMonth", currentDate.split("-")[1]);
 	    stockProp.put("toDay", currentDate.split("-")[2]);
 	    stockProp.put("toYear", currentDate.split("-")[0]);
@@ -39,9 +66,9 @@ public class YahooIf {
 	/*
 	 * open connection to Yahoo, returns arraylist
 	 */
-	public ArrayList<StockIf> openConnection(String ticker) {
+	public ArrayList<StockItem> openConnection(String ticker) {
 		  BufferedReader reader = null;
-		  ArrayList<StockIf> list = new ArrayList<StockIf>();
+		  ArrayList<StockItem> list = new ArrayList<StockItem>();
 		  //StockItem stock = new StockItem();
 		  
 	      try {
@@ -70,23 +97,23 @@ public class YahooIf {
 	        		  //set the stock attributes
 	        		  stock.setDate(dataFields[0]);
 	        		  stock.setTicker(ticker);
-	        		 /* stock.setOpen(Double.parseDouble(dataFields[1]));
+	        		  stock.setOpen(Double.parseDouble(dataFields[1]));
 	        		  stock.setHigh(Double.parseDouble(dataFields[2]));
 	        		  stock.setLow(Double.parseDouble(dataFields[3]));
 	        		  stock.setClose(Double.parseDouble(dataFields[4]));
-	        		  stock.setVolume(Integer.parseInt(dataFields[5]));*/
-	        		 // stock.setAdjClose(Double.parseDouble(dataFields[6]));
-	        		  stock.setValue(Double.parseDouble(dataFields[6]));
+	        		  stock.setVolume(Integer.parseInt(dataFields[5]));
+	        		  stock.setAdjClose(Double.parseDouble(dataFields[6]));
+	        		  //stock.setValue(Double.parseDouble(dataFields[6]));
 	        		  //add stock to arraylist
-	        		  list. add(0, stock);
+	        		  list.add(0, stock);
 	        		  //System.out.println(stock.getTicker() + " " + stock.getDate());
 	        	  }
 	          }
 	          //for (int j=0; j < 20; j++) {
 	        	//  System.out.println(list.get(j).getDate());
 	          //}
-	          for (StockIf index : list) {
-	        	  System.out.println("from yahoo:" + index.getDate() + " " + index.getValue()); 
+	          for (StockItem index : list) {
+	        	  System.out.println("from yahoo:" + index.getDate() + " " + index.getAdjClose()); 
 	          }
 	      } catch(Exception e) {
 	    	  e.printStackTrace();

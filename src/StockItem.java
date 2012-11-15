@@ -2,7 +2,7 @@
  /* stock class
  */
 
-public class StockItem implements StockIf {
+public class StockItem { //implements StockIf {
 	
 	//date 
 	private String date;
@@ -20,22 +20,11 @@ public class StockItem implements StockIf {
 	private int volume;
 	//adjusted close of the day (dividend and split adjusted)
 	private double adjClose;
+	//moving average value
+	private double ma;
+	//close under ma
+	private int underMa;
 
-	//implement the interface
-	/*
-	 * get value (=adjusted close)
-	 */
-	public double getValue() {
-		return (this.getAdjClose());
-	}
-	
-	/*
-	 * set value to adjusted close
-	 */
-	public void setValue(double value) {
-		this.setAdjClose(value);
-	}
-	
 	/**
 	 * @return the date
 	 */
@@ -63,7 +52,6 @@ public class StockItem implements StockIf {
 	public void setTicker(String ticker) {
 		this.ticker = ticker;
 	}
-	//interface implementation ends
 
 	/**
 	 * @return the open
@@ -147,6 +135,34 @@ public class StockItem implements StockIf {
 	 */
 	public void setAdjClose(double adjClose) {
 		this.adjClose = adjClose;
+	}
+
+	/**
+	 * @return the ma
+	 */
+	public double getMa() {
+		return ma;
+	}
+
+	/**
+	 * @param ma the ma to set
+	 */
+	public void setMa(double ma) {
+		this.ma = ma;
+	}
+
+	/**
+	 * @return the underMa
+	 */
+	public int getUnderMa() {
+		return underMa;
+	}
+
+	/**
+	 * @param underMa the underMa to set
+	 */
+	public void setUnderMa(int underMa) {
+		this.underMa = underMa;
 	}
 
 	/* (non-Javadoc)
