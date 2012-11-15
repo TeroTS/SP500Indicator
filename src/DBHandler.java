@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-public class DBHandler {
+public abstract class DBHandler {
 	
 	/*
 	 * open connection to database
 	 */
-	public Connection openDBConnection(String name) {
+	public static Connection openDBConnection(String name) {
 	    Connection conn= null;
 	    try
 	    {
@@ -27,7 +27,7 @@ public class DBHandler {
 	/*
 	 * close connection to database
 	 */
-	public void closeDBConnection(Connection conn) {
+	public static void closeDBConnection(Connection conn) {
 		try {
 			if(conn != null)
 				conn.close();
@@ -59,8 +59,11 @@ public class DBHandler {
     			//ticker
     			preparedStatement.setString(2, index.getTicker());
     			//value
-    			preparedStatement.setDouble(3, index.getValue());   			
-        	}	
+    			preparedStatement.setDouble(3, index.getValue());   
+    			//execute
+    			preparedStatement.executeUpdate();
+        	}
+        	
         	/*while ((line = reader.readLine()) != null) {
         		i++;
         		//don't read the first line
@@ -107,16 +110,17 @@ public class DBHandler {
     /*
      * read database, one row at a time
      */
-    public ArrayList<StockIf> readDB(Connection conn, String command, StockIf stockItem) { //throws SQLException {
-    	ResultSet rs = null;
+    public ArrayList<StockIf> readDB(Connection conn, String command, StockIf stock) { //throws SQLException {
+    	ResultSet rs = null; //new ResultSet(); //null;
     	Statement statement = null;
     	ArrayList<StockIf> stockList = new ArrayList<StockIf>();
-    	//StockItem stockItem;
     	
     	try {
     		statement = conn.createStatement();
     		rs = statement.executeQuery(command);//"select * from stock where ticker = '" + ticker + "' order by date");
+    		//System.out.println(rs.next());
     		while(rs.next()) {
+    			StockItem stockItem = new StockItem();
     			stockItem.setDate(rs.getString("date"));
     			stockItem.setTicker(rs.getString("ticker"));
     			stockItem.setValue(rs.getDouble("value"));   			

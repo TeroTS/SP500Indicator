@@ -33,7 +33,7 @@ public class SP500Indicator {
 	//Stock stock;
 	
 	public SP500Indicator() {
-		dBHandler = new DBHandler();
+		//dBHandler = new DBHandler();
 		utility = new Utility();
 		yahooIf = new YahooIf();
 		mAverage = new MAverage(10);
@@ -42,7 +42,7 @@ public class SP500Indicator {
 	
 	public void go() {
 		// create a database connection
-	    Connection connection = dBHandler.openDBConnection(NAME_DB);
+	    Connection connection = DBHandler.openDBConnection(NAME_DB);
 	    //buffered file reader
 	    BufferedReader buffReader = null;
 	    //List<Stock> list = null;
@@ -52,6 +52,9 @@ public class SP500Indicator {
 	    ArrayList<StockIf> maList = new ArrayList<StockIf>();
 	    //moving average dates
 	    //ArrayList<String> dateList = new ArrayList<String>();
+	    //moving average value
+	    double ma=0.0;
+	    ResultSet rs; //= new ResultSet();
 	
 	    try {
 	    	//read stock tickers from file,
@@ -63,9 +66,9 @@ public class SP500Indicator {
 	    	//if (!(new File(DB_NAME).exists())) {
 	    		// create a database connection
 	    	    //create stock table
-	        	dBHandler.createTable(connection, TABLE_STRING_0, TABLE_NAME_0);
+	        	//dBHandler.createTable(connection, TABLE_STRING_0, TABLE_NAME_0);
 	        	//create ma table
-	        	dBHandler.createTable(connection, TABLE_STRING_1, TABLE_NAME_1);
+	        	//dBHandler.createTable(connection, TABLE_STRING_1, TABLE_NAME_1);
 	    	//}	    	
 	    	//set the current date
 	    	utility.setCurrentDate();
@@ -76,40 +79,47 @@ public class SP500Indicator {
 	    		//fill the moving average (ma) window with old data from database,
 	    		//this data is used to calculate the new ma values
 	    		String command = "select * from stock where ticker = '" + ticker + "' order by date limit 10";
-	    		oldStockList = dBHandler.readDB(connection, command, new StockItem());
-	    		//while (resultSet.next()) {
+	    		//oldStockList = dBHandler.readDB(connection, command, new StockItem());
+	    		StockItem test = new StockItem();
+	    	    oldStockList = dBHandler.readDB(connection, command, test);
+	    		//System.out.println(rs.next());
+	    		//while (rs.next()) {
 	    		for (StockIf index : oldStockList) {
+	    			System.out.println("old:" + index.getDate() + " " + index.getValue());
 	    			mAverage.calculateMa(index.getValue());
 	    			//break the loop when ma window full of data
 	    			if (mAverage.getCount() == mAverage.getLength()) {
 	    				break;
 	    			}
 	    		}
-	    		System.out.println(mAverage.getCount() + " " + mAverage.getLength());
+	    		//System.out.println(mAverage.getCount() + " " + mAverage.getLength());
 	    		//connect Yahoo and download the new data (n lines of data)
 	    		ArrayList<StockIf> newStockList = yahooIf.openConnection(ticker);
-	    		System.out.println(newStockList.size());
+	    		//System.out.println(newStockList.size());
 	    		//calculate new ma values
 	    		maList.clear();
 	    		for (StockIf index : newStockList) {
+    				//generate a new ma item and store it to arraylist
+    				MaItem maItem = new MaItem();
+    				maItem.setDate(index.getDate());
+    				maItem.setTicker(ticker);	
+    				maItem.setValue(0.0);
 	    			mAverage.calculateMa(index.getValue());
+	    			//System.out.println(index.getDate() + " " + ticker);
 	    			//calculate the moving average when all data available
+	    			//System.out.println("value: " + index.getValue());
 	    			if (mAverage.getCount() == mAverage.getLength()) {
 	    				//System.out.println(mAverage.getCount() + " " + mAverage.getLength());
-	    				System.out.println(index.getDate() + " " + ticker);
-	    				double ma = mAverage.getAverage();//maList.add(calcMa.getAverage());	    				
-	    				//generate a new ma item and store it to arraylist
-	    				MaItem maItem = new MaItem();
-	    				maItem.setDate(index.getDate());
-	    				maItem.setTicker(ticker);	
-	    				maItem.setValue(0.0);
+	    				//System.out.println(index.getDate() + " " + ticker);
+	    				ma = mAverage.getAverage();//maList.add(calcMa.getAverage());	    				
 	    				//if ma > close set value to 1.0 else 0.0,
-	    				//used to calculate the total number of stocks above ma
+	    				//used to calculate the total number of stocks under ma
 		    			if (ma > index.getValue()) {
 		    				maItem.setValue(1.0);
-		    			}
-	    				maList.add(maItem);	
+		    			}	
 	    			}
+	    			System.out.println("ma: " + maItem.getValue() + " " + maItem.getDate() + " " + ma);
+	    			maList.add(maItem);
 	    		}
 	    		//write ma items to database
 	    		dBHandler.writeDB(connection, maList, TABLE_NAME_1);    	
@@ -117,9 +127,9 @@ public class SP500Indicator {
 		        dBHandler.writeDB(connection, newStockList, TABLE_NAME_0);
 		        
 		        //test
-		        String command2 = "select * from ma where ticker = '" + ticker + "' order by date";
-		        ArrayList<StockIf> test = dBHandler.readDB(connection, command2, new MaItem());
-		        System.out.println(test.size());
+		        //String command2 = "select * from ma where ticker = '" + ticker + "' order by date";
+		        //ArrayList<StockIf> test = dBHandler.readDB(connection, command2, new MaItem());
+		        //System.out.println(test.size());
 		        
 		        //close Yahoo read stream
 		        //yahooIf.closeConnection(bufferedReader);	
@@ -131,11 +141,12 @@ public class SP500Indicator {
 	    	utility.setPrevDate(utility.getCurrentDate());
 	    } catch(IOException e) {
 	    	e.printStackTrace();
-	   // } catch(SQLException e) {
-	   // 	e.printStackTrace();
+	    //} catch(SQLException e) {
+	    //	e.printStackTrace();
 	    } finally {
 	    	//close file read stream
-	    	//yahooIf.closeConnection(buffReader);
+	    	yahooIf.closeConnection(buffReader);
+	    	DBHandler.closeDBConnection(connection);
 	    	//set the previous download date to current date
 	    	//utility.setPrevDate(utility.getCurrentDate());	
 	    }

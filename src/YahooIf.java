@@ -42,7 +42,7 @@ public class YahooIf {
 	public ArrayList<StockIf> openConnection(String ticker) {
 		  BufferedReader reader = null;
 		  ArrayList<StockIf> list = new ArrayList<StockIf>();
-		  StockItem stock = new StockItem();
+		  //StockItem stock = new StockItem();
 		  
 	      try {
 	    	  URL yahoo = new URL(YAHOO_URL + 
@@ -64,6 +64,7 @@ public class YahooIf {
 	        	  i++;
 	        	  //don't read the first line
 	        	  if (i != 1) {
+	        		  StockItem stock = new StockItem();
 	        		  //split data fields
 	        		  String[] dataFields = line.split(",");
 	        		  //set the stock attributes
@@ -77,9 +78,15 @@ public class YahooIf {
 	        		 // stock.setAdjClose(Double.parseDouble(dataFields[6]));
 	        		  stock.setValue(Double.parseDouble(dataFields[6]));
 	        		  //add stock to arraylist
-	        		  list.add(stock);
+	        		  list. add(0, stock);
 	        		  //System.out.println(stock.getTicker() + " " + stock.getDate());
 	        	  }
+	          }
+	          //for (int j=0; j < 20; j++) {
+	        	//  System.out.println(list.get(j).getDate());
+	          //}
+	          for (StockIf index : list) {
+	        	  System.out.println("from yahoo:" + index.getDate() + " " + index.getValue()); 
 	          }
 	      } catch(Exception e) {
 	    	  e.printStackTrace();
