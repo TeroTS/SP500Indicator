@@ -8,45 +8,48 @@ import java.util.ArrayList;
 public class SP500Indicator {
 	
 	static final String TICKER_FILE = "SP500.txt";
-	static final String DB_NAME = "sp500.db";
-	static final String NAME_DB = "jdbc:sqlite:sp500.db"; 
-	static final String TABLE_NAME_0 = "stock";
-	static final String TABLE_STRING_0 = "CREATE TABLE " + TABLE_NAME_0 + " (date TEXT not null, ticker STRING not null, " +
-							 								                "value REAL, primary key (date, ticker))";
-	static final String TABLE_NAME_1 = "ma";
-	static final String TABLE_STRING_1 = "CREATE TABLE " + TABLE_NAME_1 + " (date TEXT not null, ticker STRING not null, " +
-																		 "value REAL, primary key (date, ticker))";
+	static final String DB_FILE = "sp500.db";
+	static final String DB_NAME = "jdbc:sqlite:sp500.db"; 
+	static final String TABLE_NAME = "stock";
+	//moving average length
+	static final int MA_LENGTH = 10;
+	static final int NUMBER_OF_STOCKS = 500;
+
 	//database read/write if
 	private DBHandler dBHandler;
-	//private DBHandlerMa dBHandlerMa;
 	//misc. utilities
-	private Utility utility;
+	private DateUtilities dateUtilities;
 	//Yahoo data download
 	private YahooIf yahooIf;
-	//calculate moving average (ma)
-	private MAverage mAverage;
-	//stock 
-	//Stock stock;
-	//private ArrayList<StockItem> oldStockList;
+    //% of the stocks under ma
+    ArrayList<MaItem> maList;
 	
 	public SP500Indicator() {
 		dBHandler = new DBHandler();
-		//dBHandlerMa = new DBHandlerMa();
-		utility = new Utility();
+		dateUtilities = new DateUtilities();
 		yahooIf = new YahooIf();
-		mAverage = new MAverage(3);
-		//stock = new Stock();
+		//new draw panel
+		//DrawGraph drawPanel = new DrawGraph(MaList);
 	}
 	
 	public void go() {
-		// create a database connection
-	    Connection connection = dBHandler.openDBConnection(NAME_DB);
+		//create a database connection
+	    Connection connection = null;
 	    //buffered file reader
 	    BufferedReader buffReader = null;
-	    //List<Stock> list = null;
 	    //old stock samples
-	    ArrayList<StockItem> oldStockList; //= new ArrayList<StockItem>();
-	
+	    ArrayList<StockItem> oldStockList = null;
+	    //new stock samples from yahoo
+	    ArrayList<StockItem> newStockList = null;
+	    //new stock samples with updated ma & underMa values
+	    ArrayList<StockItem> newSamples = null;
+	    //moving average
+	    MAverage mAverage = null;
+	    //database read command
+	    String command = "";
+	    //
+	    ArrayList<StockItem> stockList = null;
+	    
 	    try {
 	    	//read stock tickers from file,
 	    	//one ticker per line
@@ -54,93 +57,63 @@ public class SP500Indicator {
 	    	FileReader fileReader = new FileReader(file);
 	    	buffReader = new BufferedReader(fileReader);
 	    	//if database doesn't exist, create table
-	    	//if (!(new File(DB_NAME).exists())) {
+	    	//if (!(new File(DB_FILE).exists())) {
 	    		// create a database connection
+	    	    connection = dBHandler.openDBConnection(DB_NAME);
 	    	    //create stock table
-	        	//dBHandler.createTable(connection, TABLE_NAME_0);
-	        	//create ma table
-	        	//dBHandlerMa.createTable(connection, TABLE_NAME_1);
-	    	//}	    	
+	        	dBHandler.createTable(connection, TABLE_NAME);
+	    	//} else {
+	    	//	connection = dBHandler.openDBConnection(DB_NAME);
+	    	//}
 	    	//set the current date
-	    	utility.setCurrentDate();
+	    	dateUtilities.setCurrentDate();
 	    	//set the download dates (previous date & current date)
-	    	String prevDate = utility.getPrevDate();
-	    	String currDate = utility.getCurrentDate();
+	    	String prevDate = dateUtilities.getPrevDate();
+	    	String currDate = dateUtilities.getCurrentDate();
 	    	System.out.println("prev: " + prevDate + " curr: " + currDate);
-	    	yahooIf.setDateProp(prevDate, currDate);	    	
+	    	yahooIf.setDateProp(prevDate, currDate);
+	    	//if stock data not updated today, do the update
 	    	if (!currDate.equals(prevDate)) {
 	    		String ticker = null;
 	    		while ((ticker = buffReader.readLine()) != null) {	
-	    			//fill the moving average (ma) window with old data from database,
+	    			//every stock has its own average calculator object
+	    			mAverage = new MAverage(MA_LENGTH);
+	    			//fill the moving average (ma) window with old samples from database,
 	    			//this data is used to calculate the new ma values
 	    			//read the last n samples from the database
-	    			oldStockList = dBHandler.readDB(connection, TABLE_NAME_0, ticker, 3);
-	    			//fill the ma window with old data
-	    			loadData(oldStockList);	    	    
-	    			//System.out.println(mAverage.getCount() + " " + mAverage.getLength());
-	    			//connect Yahoo and download the new data (n lines of data)
-	    			ArrayList<StockItem> newStockList = yahooIf.openConnection(ticker);
-	    			//System.out.println(newStockList.size());
+	    			command = "select * from " + TABLE_NAME + " where ticker = '" + ticker + "' order by date desc limit " + MA_LENGTH;
+	    			oldStockList = dBHandler.readDB(connection, command);
+	    			//fill the ma window with old samples
+	    			MaUtilities.loadData(oldStockList, mAverage);	    	    
+	    			//connect Yahoo and download the new samples
+	    			newStockList = yahooIf.openConnection(ticker);
 	    			//calculate ma & underMa values for new samples
-	    			ArrayList<StockItem> newSamples= calcNewSamples(newStockList);    	
-	    			//write ma items to database
-	    			//dBHandlerMa.writeDB(connection, maList, TABLE_NAME_1);    	
+	    			newSamples= MaUtilities.calcNewSamples(newStockList, mAverage);	
 	    			//write new samples to database
-	    			dBHandler.writeDB(connection, newSamples, TABLE_NAME_0);
+	    			dBHandler.writeDB(connection, newSamples, TABLE_NAME);
 	    		}
 	    	}
+			//load samples from database, list contains (number_of_stocks * number_of_dates) objects
+			command = "select * from " + TABLE_NAME + " order by date desc limit 30000";
+			stockList = dBHandler.readDB(connection, command);
+			//calculate the % of the stocks under ma
+			maList = MaUtilities.calcUnderMa(stockList, NUMBER_OF_STOCKS);
+			//draw the graph
+			DrawGraph drawPanel = new DrawGraph(maList);
+			drawPanel.init(drawPanel);
 	    	buffReader.close();
 	    } catch(IOException e) {
 	    	e.printStackTrace();
 	    //} catch(SQLException e) {
 	    //	e.printStackTrace();
 	    } finally {
-	    	//close file read stream
-	    	yahooIf.closeConnection(buffReader);
+            //close database connection
 	    	dBHandler.closeDBConnection(connection);
-	    	utility.setPrevDate(utility.getCurrentDate());
-	    	//set the previous download date to current date
-	    	//utility.setPrevDate(utility.getCurrentDate());	
+	    	//update the previous download date to current date
+	    	dateUtilities.setPrevDate(dateUtilities.getCurrentDate());
 	    }
 	    
     }
-	
-	/*
-	 * fill the ma window with old data from database,
-	 * used to calculate the new ma values
-	 */
-	private void loadData(ArrayList<StockItem> list) {
-		for (StockItem index : list) {
-			//System.out.println("old:" + index.getDate() + " " + index.getAdjClose());
-			mAverage.calcSum(index.getAdjClose());
-			//break the loop when ma window full of data
-			if (mAverage.getCount() == mAverage.getLength()) {
-				break;
-			}
-		}		
-	}
-
-	/*
-	 * calculate new values for ma and underMa
-	 */
-	private ArrayList<StockItem> calcNewSamples(ArrayList<StockItem> list) {
-		for (StockItem index : list) {
-			mAverage.calcSum(index.getAdjClose());
-			//calculate the moving average when all data available
-			if (mAverage.getCount() == mAverage.getLength()) {
-				//set new ma value
-				index.setMa(mAverage.getAverage());//maList.add(calcMa.getAverage());	    				
-				//if ma > close set value to 1 else 0,
-				//used to calculate the total number of stocks under ma
-				if (index.getMa() > index.getAdjClose()) {
-					index.setUnderMa(1);
-				}	
-			}
-			System.out.println("ma: " + index.getUnderMa() + " " + index.getDate() + " " + index.getMa() + " " + index.getAdjClose());
-		}		
-		return list;
-	}
-
 
 	public static void main(String[] args) throws ClassNotFoundException {
 		

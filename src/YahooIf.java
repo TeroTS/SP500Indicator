@@ -50,9 +50,7 @@ public class YahooIf {
         String Year = Integer.toString(cal.get(Calendar.YEAR)); 
     	//format YYYY-MM-DD
     	String pDate = Year + "-" + Month + "-" + Day;
-    	
-    	//System.out.println(pDate);
-		//int fromDay = Integer.parseInt(prevDate.split("-")[2]) + 1;
+
 		//set download dates
 		stockProp.put("fromMonth", pDate.split("-")[1]);
 	    stockProp.put("fromDay", pDate.split("-")[2]);
@@ -112,11 +110,18 @@ public class YahooIf {
 	          //for (int j=0; j < 20; j++) {
 	        	//  System.out.println(list.get(j).getDate());
 	          //}
-	          for (StockItem index : list) {
-	        	  System.out.println("from yahoo:" + index.getDate() + " " + index.getAdjClose()); 
-	          }
+	         // for (StockItem index : list) {
+	        //	  System.out.println("from yahoo:" + index.getDate() + " " + index.getAdjClose()); 
+	         // }
 	      } catch(Exception e) {
 	    	  e.printStackTrace();
+	      } finally {
+	    	  try {
+	    		  if (reader != null)
+	    			  reader.close();
+	    	  } catch(IOException e) {
+	    		  e.printStackTrace();
+	    	  }	    	  
 	      }
 	      return list;
 	}
@@ -124,13 +129,13 @@ public class YahooIf {
 	/*
 	 * close data reader
 	 */
-	public void closeConnection(BufferedReader reader) {
+/*	public void closeConnection(BufferedReader reader) {
 		try {
 			if (reader != null)
 				reader.close();
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 	
 }

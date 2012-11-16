@@ -92,7 +92,7 @@ public class DBHandler {
     /*
      * read database, one row at a time
      */
-    public ArrayList<StockItem> readDB(Connection conn, String tableName, String ticker, int length) { //throws SQLException {
+    public ArrayList<StockItem> readDB(Connection conn, String command) { //throws SQLException {
     	ResultSet rs = null; //new ResultSet(); //null;
     	Statement statement = null;
     	ArrayList<StockItem> stockList = new ArrayList<StockItem>();
@@ -100,7 +100,7 @@ public class DBHandler {
     	try {
     		statement = conn.createStatement();
     		//read the last n rows of the database
-    		rs = statement.executeQuery("select * from " + tableName + " where ticker = '" + ticker + "' order by date desc limit " + length);
+    		rs = statement.executeQuery(command);
     		//System.out.println(rs.next());
     		while(rs.next()) {
     			StockItem stockItem = new StockItem();
