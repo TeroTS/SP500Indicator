@@ -17,6 +17,7 @@ public class SP500Indicator {
 	private static final int MA_LENGTH = 50;
 	private static final int NUMBER_OF_STOCKS = 500;
 	//how many days are drawn (500 * x days) 
+	//default three months
 	private static final int LOAD_LIMIT = 30000;
 
 	//database read/write if
@@ -72,7 +73,7 @@ public class SP500Indicator {
 	    	//set the download dates (previous date & current date)
 	    	String prevDate = dateUtilities.getPrevDate();
 	    	String currDate = dateUtilities.getCurrentDate();
-	    	System.out.println("prev: " + prevDate + " curr: " + currDate);
+	    	//System.out.println("prev: " + prevDate + " curr: " + currDate);
 	    	yahooIf.setDateProp(prevDate, currDate);
 	    	//if stock data not updated today, do the update
 	    	if (!currDate.equals(prevDate)) {
