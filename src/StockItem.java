@@ -2,7 +2,7 @@
  /* stock class
  */
 
-public class StockItem { //implements StockIf {
+public class StockItem {
 	
 	//date 
 	private String date;
@@ -26,147 +26,147 @@ public class StockItem { //implements StockIf {
 	private int underMa;
 
 	/**
-	 * @return the date
+	 * get date
 	 */
 	public String getDate() {
 		return date;
 	}
 
 	/**
-	 * @param date the date to set
+	 * set date
 	 */
 	public void setDate(String date) {
 		this.date = date;
 	}
 
 	/**
-	 * @return the ticker
+	 * get ticker
 	 */
 	public String getTicker() {
 		return ticker;
 	}
 
 	/**
-	 * @param ticker the ticker to set
+	 * set ticker
 	 */
 	public void setTicker(String ticker) {
 		this.ticker = ticker;
 	}
 
 	/**
-	 * @return the open
+	 * get open
 	 */
 	public double getOpen() {
 		return open;
 	}
 
 	/**
-	 * @param open the open to set
+	 * set open
 	 */
 	public void setOpen(double open) {
 		this.open = open;
 	}
 
 	/**
-	 * @return the high
+	 * get high
 	 */
 	public double getHigh() {
 		return high;
 	}
 
 	/**
-	 * @param high the high to set
+	 * set high
 	 */
 	public void setHigh(double high) {
 		this.high = high;
 	}
 
 	/**
-	 * @return the low
+	 * get low
 	 */
 	public double getLow() {
 		return low;
 	}
 
 	/**
-	 * @param low the low to set
+	 * set low
 	 */
 	public void setLow(double low) {
 		this.low = low;
 	}
 
 	/**
-	 * @return the close
+	 * get close
 	 */
 	public double getClose() {
 		return close;
 	}
 
 	/**
-	 * @param close the close to set
+	 * set close
 	 */
 	public void setClose(double close) {
 		this.close = close;
 	}
 
 	/**
-	 * @return the volume
+	 * get volume
 	 */
 	public int getVolume() {
 		return volume;
 	}
 
 	/**
-	 * @param volume the volume to set
+	 * set volume
 	 */
 	public void setVolume(int volume) {
 		this.volume = volume;
 	}
 
 	/**
-	 * @return the adjClose
+	 * get adjClose
 	 */
 	public double getAdjClose() {
 		return adjClose;
 	}
 
 	/**
-	 * @param adjClose the adjClose to set
+	 * set adjClose
 	 */
 	public void setAdjClose(double adjClose) {
 		this.adjClose = adjClose;
 	}
 
 	/**
-	 * @return the ma
+	 * get ma
 	 */
 	public double getMa() {
 		return ma;
 	}
 
 	/**
-	 * @param ma the ma to set
+	 * set ma
 	 */
 	public void setMa(double ma) {
 		this.ma = ma;
 	}
 
 	/**
-	 * @return the underMa
+	 * get underMa
 	 */
 	public int getUnderMa() {
 		return underMa;
 	}
 
 	/**
-	 * @param underMa the underMa to set
+	 * set underMa
 	 */
 	public void setUnderMa(int underMa) {
 		this.underMa = underMa;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
+	/* 
+	 * toString
 	 */
 	@Override
 	public String toString() {

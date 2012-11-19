@@ -1,5 +1,6 @@
 /*
- * date utility class
+ * date utility class. Methods to set the previous and current
+ * update dates.
  */
 
 import java.io.IOException;
@@ -11,12 +12,12 @@ import java.io.FileOutputStream;
 
 public class DateUtilities {
 	
+	private static final String CONFIG_FILE = "config.txt";
+	
     //current date
     private String currentDate;
     //previous date when update happened
     private String prevDate;
-    //is update needed or not
-   // private boolean doUpdate;
     
     /*
      * get the previous update date (read from config file)
@@ -25,7 +26,7 @@ public class DateUtilities {
     	Properties prop = new Properties();
 
     	try {
-    		prop.load(new FileInputStream("config.txt"));
+    		prop.load(new FileInputStream(CONFIG_FILE));
     	} catch(IOException e) {
     		e.printStackTrace();
     	}
@@ -44,7 +45,7 @@ public class DateUtilities {
     	try {
     		prop.setProperty("PREV_DATE", PrevDate);
     		
-    		prop.store(new FileOutputStream("config.txt"), null);
+    		prop.store(new FileOutputStream(CONFIG_FILE), null);
  
     	} catch (IOException ex) {
     		ex.printStackTrace();
@@ -55,16 +56,12 @@ public class DateUtilities {
      * set the current date (=current date - 1)
      */
     public void setCurrentDate() {
-    	String Day;
-    	String Month;
-    	String Year;
     	Calendar now = Calendar.getInstance();
         //get current date - 1 day
-    	now.add(Calendar.DAY_OF_WEEK, -1); // fix this (-1) !!!!!!!!!!!!!
-    	//setDay(Integer.toString(now.get(Calendar.DATE)));
-        Day = Integer.toString(now.get(Calendar.DATE));        
-        Month = Integer.toString(now.get(Calendar.MONTH));         
-        Year = Integer.toString(now.get(Calendar.YEAR)); 
+    	now.add(Calendar.DAY_OF_WEEK, -1);
+        String Day = Integer.toString(now.get(Calendar.DATE));        
+        String Month = Integer.toString(now.get(Calendar.MONTH));         
+        String Year = Integer.toString(now.get(Calendar.YEAR)); 
     	//format YYYY-MM-DD
     	currentDate = Year + "-" + Month + "-" + Day;
     }

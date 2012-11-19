@@ -7,17 +7,21 @@ import java.util.ArrayList;
 
 public class SP500Indicator {
 	
-	static final String TICKER_FILE = "SP500.txt";
-	static final String DB_FILE = "sp500.db";
-	static final String DB_NAME = "jdbc:sqlite:sp500.db"; 
-	static final String TABLE_NAME = "stock";
+	//stock symbol file
+	private static final String TICKER_FILE = "SP500.txt";
+	//database file
+	private static final String DB_FILE = "sp500.db";
+	private static final String DB_NAME = "jdbc:sqlite:sp500.db"; 
+	private static final String TABLE_NAME = "stock";
 	//moving average length
-	static final int MA_LENGTH = 10;
-	static final int NUMBER_OF_STOCKS = 500;
+	private static final int MA_LENGTH = 50;
+	private static final int NUMBER_OF_STOCKS = 500;
+	//how many days are drawn (500 * x days) 
+	private static final int LOAD_LIMIT = 30000;
 
 	//database read/write if
 	private DBHandler dBHandler;
-	//misc. utilities
+	//date handling utilities
 	private DateUtilities dateUtilities;
 	//Yahoo data download
 	private YahooIf yahooIf;
@@ -28,8 +32,6 @@ public class SP500Indicator {
 		dBHandler = new DBHandler();
 		dateUtilities = new DateUtilities();
 		yahooIf = new YahooIf();
-		//new draw panel
-		//DrawGraph drawPanel = new DrawGraph(MaList);
 	}
 	
 	public void go() {
@@ -47,24 +49,24 @@ public class SP500Indicator {
 	    MAverage mAverage = null;
 	    //database read command
 	    String command = "";
-	    //
+	    //list of stocks used to calculate the final % value
 	    ArrayList<StockItem> stockList = null;
 	    
 	    try {
-	    	//read stock tickers from file,
+	    	//read stock tickers (=symbols) from file,
 	    	//one ticker per line
 	    	File file = new File(TICKER_FILE);
 	    	FileReader fileReader = new FileReader(file);
 	    	buffReader = new BufferedReader(fileReader);
 	    	//if database doesn't exist, create table
-	    	//if (!(new File(DB_FILE).exists())) {
+	    	if (!(new File(DB_FILE).exists())) {
 	    		// create a database connection
 	    	    connection = dBHandler.openDBConnection(DB_NAME);
 	    	    //create stock table
 	        	dBHandler.createTable(connection, TABLE_NAME);
-	    	//} else {
-	    	//	connection = dBHandler.openDBConnection(DB_NAME);
-	    	//}
+	    	} else {
+	    		connection = dBHandler.openDBConnection(DB_NAME);
+	    	}
 	    	//set the current date
 	    	dateUtilities.setCurrentDate();
 	    	//set the download dates (previous date & current date)
@@ -80,7 +82,7 @@ public class SP500Indicator {
 	    			mAverage = new MAverage(MA_LENGTH);
 	    			//fill the moving average (ma) window with old samples from database,
 	    			//this data is used to calculate the new ma values
-	    			//read the last n samples from the database
+	    			//read the last n (n == length of ma) samples from the database
 	    			command = "select * from " + TABLE_NAME + " where ticker = '" + ticker + "' order by date desc limit " + MA_LENGTH;
 	    			oldStockList = dBHandler.readDB(connection, command);
 	    			//fill the ma window with old samples
@@ -94,25 +96,27 @@ public class SP500Indicator {
 	    		}
 	    	}
 			//load samples from database, list contains (number_of_stocks * number_of_dates) objects
-			command = "select * from " + TABLE_NAME + " order by date desc limit 30000";
+			command = "select * from " + TABLE_NAME + " order by date desc limit " + LOAD_LIMIT;
 			stockList = dBHandler.readDB(connection, command);
 			//calculate the % of the stocks under ma
 			maList = MaUtilities.calcUnderMa(stockList, NUMBER_OF_STOCKS);
 			//draw the graph
 			DrawGraph drawPanel = new DrawGraph(maList);
 			drawPanel.init(drawPanel);
-	    	buffReader.close();
 	    } catch(IOException e) {
 	    	e.printStackTrace();
-	    //} catch(SQLException e) {
-	    //	e.printStackTrace();
 	    } finally {
-            //close database connection
+	    	//close database connection
 	    	dBHandler.closeDBConnection(connection);
 	    	//update the previous download date to current date
 	    	dateUtilities.setPrevDate(dateUtilities.getCurrentDate());
+	    	try {
+	    		if (buffReader != null)
+	    			buffReader.close();
+	    	} catch(IOException e) {
+	    		e.printStackTrace();
+	    	}	    	  
 	    }
-	    
     }
 
 	public static void main(String[] args) throws ClassNotFoundException {

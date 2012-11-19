@@ -1,24 +1,23 @@
-import java.util.ArrayList;
-
 /*
  * MaUtilities class, includes static methods to process ma values
  */
+
+import java.util.ArrayList;
+
 public class MaUtilities {
 
 	/*
-	 * fill the ma window with old data from database,
+	 * fill the moving average (ma) window with old data from database,
 	 * used to calculate the new ma values
 	 */
 	public static void loadData(ArrayList<StockItem> list, MAverage mAverage) {
 		for (StockItem index : list) {
-			//System.out.println("old:" + index.getDate() + " " + index.getAdjClose());
 			mAverage.calcSum(index.getAdjClose());
 			//break the loop when ma window full of data
 			if (mAverage.getCount() == mAverage.getLength()) {
 				break;
 			}
 		}	
-		//System.out.println("count: " + mAverage.getCount() + " length: " + mAverage.getLength());
 	}
 
 	/*
@@ -37,7 +36,6 @@ public class MaUtilities {
 					index.setUnderMa(1);
 				}	
 			}
-			//System.out.println(index.getTicker() + " " + index.getUnderMa() + " " + index.getDate() + " ma " + index.getMa() + " close " + index.getAdjClose());
 		}		
 		return list;
 	}
@@ -63,7 +61,6 @@ public class MaUtilities {
 				maItem.setDate(index.getDate());
 				maItem.setUnderMa(100*sum/numberOfStocks);
 				maList.add(maItem);
-				//System.out.println(index.getDate() + " " + 100*sum/numberOfStocks);
 				i = 0;
 				sum = 0;					
 			}

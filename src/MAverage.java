@@ -6,8 +6,6 @@ import java.util.ArrayDeque;
 
 public class MAverage {
 	
-	//n-length moving average
-	//private double ma;
 	//length
 	private int length;
 	//sum

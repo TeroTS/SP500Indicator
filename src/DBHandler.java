@@ -1,3 +1,7 @@
+/*
+ * database interface class. includes methods to open/close, initialize and
+ * read/write database
+ */
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,6 +11,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class DBHandler {
+	
+	private static final String TABLE_STRING ="(date text not null, ticker string not null, " +
+			 				  				  "open real, high real, low real, close real, " +
+			 				  				  "volume integer, adjClose real, ma real, " +
+			 				  				  "underMa integer, primary key (date, ticker))";
 	
 	/*
 	 * open connection to database
@@ -19,7 +28,7 @@ public class DBHandler {
 	        conn = DriverManager.getConnection(name);
 	        //Statement statement = connection.createStatement();
 	    } catch(SQLException e) {
-		      System.err.println(e.getMessage());
+	    	e.printStackTrace();
 		} 
 		return conn;
 	}
@@ -34,24 +43,20 @@ public class DBHandler {
 		}
 		catch(SQLException e) {
 			//connection close failed.
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
 	/*
 	 * load stock data and write it to database
 	 */
-    public void writeDB(Connection conn, ArrayList<StockItem> stockList, String tableName) { //throws SQLException {
-    	//Connection conn = null;
+    public void writeDB(Connection conn, ArrayList<StockItem> stockList, String tableName) {
     	Statement statement = null;
     	//prepared statement to speed up the write
     	PreparedStatement preparedStatement = null;
 	    try
 	    {
 	        statement = conn.createStatement();
-	        //read buffer from download site
-	        //String line = null;
-        	//int i = 0;
         	for (StockItem index : stockList) {
         		preparedStatement = conn.prepareStatement("insert or replace into " + tableName + " values(?,?,?,?,?,?,?,?,?,?)");
     			//date
@@ -77,14 +82,14 @@ public class DBHandler {
     			//execute
     			preparedStatement.executeUpdate();
         	}
-	    } catch(Exception ex) {
-	    	  ex.printStackTrace();
+	    } catch(SQLException e) {
+	    	  e.printStackTrace();
  
     	} finally {
 	    	try {
 	    		statement.close();
 	    	} catch(SQLException e) {
-	    		System.err.println(e.getMessage());
+	    		e.printStackTrace();
 	    	}
 	    }
     }
@@ -92,8 +97,8 @@ public class DBHandler {
     /*
      * read database, one row at a time
      */
-    public ArrayList<StockItem> readDB(Connection conn, String command) { //throws SQLException {
-    	ResultSet rs = null; //new ResultSet(); //null;
+    public ArrayList<StockItem> readDB(Connection conn, String command) {
+    	ResultSet rs = null;
     	Statement statement = null;
     	ArrayList<StockItem> stockList = new ArrayList<StockItem>();
     	
@@ -115,19 +120,14 @@ public class DBHandler {
     			stockItem.setMa(rs.getDouble("ma"));
     			stockItem.setUnderMa(rs.getInt("underMa"));
     			stockList.add(0, stockItem);
-  
-    			//System.out.print(rs.getString("date") + " ");  
-    			//System.out.print(rs.getString("ticker") + " ");
-    			//System.out.print(rs.getDouble("adjClose") + "\n");
     		}
     	}  catch(SQLException e) {
-	    	//connection close failed.
-	    	System.err.println(e.getMessage());    		
+    		 e.printStackTrace();	
     	} finally {
 	    	try {
 	    		statement.close();
 	    	} catch(SQLException e) {
-	    		System.err.println(e.getMessage());
+	    		e.printStackTrace();
 	    	}
 	    }
     	return stockList;
@@ -136,26 +136,21 @@ public class DBHandler {
     /*
      * create table
      */
-	public void createTable(Connection conn, String tableName) { //throws SQLException {
-		//if (!(new File(DBname).exists())) {	
+	public void createTable(Connection conn, String tableName) {
 		Statement statement = null;
-		String tableString = "create table " + tableName + " (date text not null, ticker string not null, " +
-							 "open real, high real, low real, close real, " +
-							 "volume integer, adjClose real, ma real, underMa integer, primary key (date, ticker))";
+		String tableString = "create table " + tableName + TABLE_STRING;
 		
     	try {		
     		statement = conn.createStatement();
     		statement.executeUpdate("drop table if exists " + tableName);
     		statement.executeUpdate(tableString);
-    		//create unique index
-    		//statement.executeUpdate("CREATE UNIQUE INDEX stock_idx ON stock(date, ticker)");
 	    } catch(SQLException e) {
-	    	System.err.println(e.getMessage());
+	    	e.printStackTrace();
 	    } finally {
 	    	try {
 	    		statement.close();
 	    	} catch(SQLException e) {
-	    		System.err.println(e.getMessage());
+	    		e.printStackTrace();
 	    	}
 	    }
 	}

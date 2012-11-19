@@ -6,9 +6,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
-//import java.util.List;
 import java.util.ArrayList;
-//import java.util.Properties;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
@@ -19,7 +17,9 @@ import java.text.ParseException;
 public class YahooIf {
 	
 	//Yahoo finance data download URL
-	static final String YAHOO_URL = "http://ichart.finance.yahoo.com/table.csv?";
+	private static final String YAHOO_URL = "http://ichart.finance.yahoo.com/table.csv?";
+	//date format
+	private static final String DATE_FORMAT = "yyyy-MM-dd";
 	
 	//stock download date properties (from date and to date)
 	private HashMap<String, String> stockProp;
@@ -36,9 +36,7 @@ public class YahooIf {
 		//download start day is always previous day + 1
 		Calendar cal = new GregorianCalendar();
 		try {
-			//String pDate = prevDate;
-			Date date = new SimpleDateFormat("yyyy-MM-dd").parse(prevDate);
-			//System.out.println(date);
+			Date date = new SimpleDateFormat(DATE_FORMAT).parse(prevDate);
 			cal.setTime(date);
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -48,7 +46,6 @@ public class YahooIf {
         String Day = Integer.toString(cal.get(Calendar.DATE));        
         String Month = Integer.toString(cal.get(Calendar.MONTH)+1); //first month 0         
         String Year = Integer.toString(cal.get(Calendar.YEAR)); 
-    	//format YYYY-MM-DD
     	String pDate = Year + "-" + Month + "-" + Day;
 
 		//set download dates
@@ -87,7 +84,7 @@ public class YahooIf {
 	          int i = 0;
 	          while ((line = reader.readLine()) != null) {
 	        	  i++;
-	        	  //don't read the first line
+	        	  //don't read the header line
 	        	  if (i != 1) {
 	        		  StockItem stock = new StockItem();
 	        		  //split data fields
@@ -101,18 +98,10 @@ public class YahooIf {
 	        		  stock.setClose(Double.parseDouble(dataFields[4]));
 	        		  stock.setVolume(Integer.parseInt(dataFields[5]));
 	        		  stock.setAdjClose(Double.parseDouble(dataFields[6]));
-	        		  //stock.setValue(Double.parseDouble(dataFields[6]));
 	        		  //add stock to arraylist
 	        		  list.add(0, stock);
-	        		  //System.out.println(stock.getTicker() + " " + stock.getDate());
 	        	  }
 	          }
-	          //for (int j=0; j < 20; j++) {
-	        	//  System.out.println(list.get(j).getDate());
-	          //}
-	         // for (StockItem index : list) {
-	        //	  System.out.println("from yahoo:" + index.getDate() + " " + index.getAdjClose()); 
-	         // }
 	      } catch(Exception e) {
 	    	  e.printStackTrace();
 	      } finally {
@@ -125,17 +114,5 @@ public class YahooIf {
 	      }
 	      return list;
 	}
-	
-	/*
-	 * close data reader
-	 */
-/*	public void closeConnection(BufferedReader reader) {
-		try {
-			if (reader != null)
-				reader.close();
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-	}*/
 	
 }

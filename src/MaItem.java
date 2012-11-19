@@ -11,28 +11,28 @@ public class MaItem {
 	private String date;
 
 	/**
-	 * @return the underMa
+	 * get underMa
 	 */
 	public double getUnderMa() {
 		return underMa;
 	}
 	
 	/**
-	 * @param underMa the underMa to set
+	 * set underMa
 	 */
 	public void setUnderMa(double underMa) {
 		this.underMa = underMa;
 	}
 	
 	/**
-	 * @return the date
+	 * get date
 	 */
 	public String getDate() {
 		return date;
 	}
 	
 	/**
-	 * @param date the date to set
+	 * set date
 	 */
 	public void setDate(String date) {
 		this.date = date;
