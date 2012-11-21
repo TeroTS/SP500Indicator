@@ -8,11 +8,14 @@ to sell.
 Stock data is downloaded from Yahoo Finance. SQLite is used as a database to
 store the stock data.
 
+
 config.txt : The date when the database was last updated
+
 sp500.db : Database file
+
 SP500.txt : S&P500 stock symbol file
 
-How to use:
+How to use
 -----------
 - Copy config.txt, sp500.db, SP500.txt and SP500Indicator into same directory
 - Run the .jar file
