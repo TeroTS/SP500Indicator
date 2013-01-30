@@ -1,3 +1,5 @@
+This is the first version of the program, I'am currently designing the new version with MVC + DAO + improved GUI
+
 S&P500 index overbought/sold indicator
 --------------------------------------
 Calculates the number of S&P500 stocks under 50 day moving average.
